@@ -20,9 +20,12 @@ class Gaia(mesa.Model):
     """
     def __init__(self,
                  initial_temp=25.0,
-                 initial_black=20,
-                 initial_white=20,
-                 solar_luminosity=1.0,  # choices [0,8, 0.6, 1.0, 1.4]
+                 initial_black=100,
+                 initial_white=100,
+                 solar_luminosity=1.4,  # choices [0,8, 0.6, 1.0, 1.4]
+                 white_albedo=0.75,
+                 black_albedo=0.25,
+                 surface_albedo=0.4,
                  width=20,
                  height=20,
                  verbose=False):
@@ -40,6 +43,9 @@ class Gaia(mesa.Model):
         self.initial_black = initial_black
         self.initial_white = initial_white
         self.solar_luminosity = solar_luminosity
+        self.white_albedo = white_albedo
+        self.black_albedo = black_albedo
+        self.surface_albedo = surface_albedo
         self.width = width
         self.height = height
         self.verbose = verbose
@@ -53,6 +59,7 @@ class Gaia(mesa.Model):
             {
                 "Black Daisies": lambda m: m.schedule.get_type_count(BlackDaisy),
                 "White Daisies": lambda m: m.schedule.get_type_count(WhiteDaisy),
+                "Total Daisies": lambda m: m.schedule.get_type_count(BlackDaisy) + m.schedule.get_type_count(WhiteDaisy),
                 "World Temp": lambda m: m.schedule.get_mean_temp(),
                 # "Grass Temp": lambda m: m.schedule.get_type_count(GrassPatch, lambda x: x.temp),
             }
@@ -60,8 +67,8 @@ class Gaia(mesa.Model):
 
         # Populating the world
         self.create_grass_patch()
-        self.create_white_daisies()
-        self.create_black_daisies()
+        self.create_daisies(WhiteDaisy, self.initial_white, self.white_albedo)
+        self.create_daisies(BlackDaisy, self.initial_black, self.black_albedo)
 
         # Setting
         self.running = True
@@ -70,33 +77,19 @@ class Gaia(mesa.Model):
 
     def create_grass_patch(self):
         for _agent, x, y in self.grid.coord_iter():
-            grass = GrassPatch(self.next_id(), (x, y), self, self.initial_temp)
+            grass = GrassPatch(self.next_id(), (x, y), self, self.initial_temp, self.surface_albedo)
             self.grid.place_agent(grass, (x, y))
             self.schedule.add(grass)
 
-    def create_white_daisies(self):
-        """Create White daisy agents"""
-        for i in range(self.initial_white):
+    def create_daisies(self, agent_type, initial_num, albedo):
+        """Create Daisy agents"""
+        for i in range(initial_num):
             x = self.random.randrange(self.width)
             y = self.random.randrange(self.height)
             daisies = [a for a in self.grid.get_cell_list_contents((x, y)) if isinstance(a, GrassPatch) is False]
             if len(daisies) == 0:
-                albedo = self.random.random()
-                remaining_lifespan = self.random.randint(1, 5)
-                daisy = WhiteDaisy(self.next_id(), (x, y), self, albedo, remaining_lifespan)
-                self.grid.place_agent(daisy, (x, y))
-                self.schedule.add(daisy)
-
-    def create_black_daisies(self):
-        """Create Black daisy agents"""
-        for i in range(self.initial_black):
-            x = self.random.randrange(self.width)
-            y = self.random.randrange(self.height)
-            daisies = [a for a in self.grid.get_cell_list_contents((x, y)) if isinstance(a, GrassPatch) is False]
-            if len(daisies) == 0:
-                albedo = self.random.random()
-                remaining_lifespan = self.random.randint(1, 5)
-                daisy = BlackDaisy(self.next_id(), (x, y), self, albedo, remaining_lifespan)
+                remaining_lifespan = 5
+                daisy = agent_type(self.next_id(), (x, y), self, albedo, remaining_lifespan)
                 self.grid.place_agent(daisy, (x, y))
                 self.schedule.add(daisy)
 
