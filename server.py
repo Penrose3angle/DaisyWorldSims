@@ -79,8 +79,8 @@ model_params = {
     "title": mesa.visualization.StaticText("Parameters:"),
     ''
     'initial_temp': mesa.visualization.Slider("Initial Temperature", 25, 1, 50),
-    'initial_white': mesa.visualization.Slider("Initial White Daisies", 20, 0, 50),
-    'initial_black': mesa.visualization.Slider("Initial Black Daisies", 20, 0, 50),
+    'initial_white': mesa.visualization.Slider("Initial White Daisies", 50, 0, 100),
+    'initial_black': mesa.visualization.Slider("Initial Black Daisies", 50, 0, 100),
     'solar_luminosity': mesa.visualization.Slider("Solar Luminosity", 1.0, 0.6, 1.4, 0.1, description='How much energy a daisy can absorb'),
 
     # "grass": mesa.visualization.Checkbox("Grass Enabled", True),
