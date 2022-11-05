@@ -1,11 +1,10 @@
 """
-Wolf-Sheep Predation Model
+DaisyWorld Model
 ================================
 Replication of the model found in NetLogo:
-    Wilensky, U. (1997). NetLogo Wolf Sheep Predation model.
-    http://ccl.northwestern.edu/netlogo/models/WolfSheepPredation.
-    Center for Connected Learning and Computer-Based Modeling,
-    Northwestern University, Evanston, IL.
+    Novak, M. and Wilensky, U. (2006). NetLogo Daisyworld model.
+    http://ccl.northwestern.edu/netlogo/models/Daisyworld.
+    Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
 """
 
 import mesa
@@ -83,7 +82,6 @@ class Gaia(mesa.Model):
             self.schedule.add(grass)
 
     def create_daisies(self, agent_type, initial_num, albedo):
-        """Create Daisy agents"""
         for i in range(initial_num):
             x = self.random.randrange(self.width)
             y = self.random.randrange(self.height)
@@ -96,7 +94,6 @@ class Gaia(mesa.Model):
     def step(self):
         """
         Walk the schedule one step and collect the data from the model
-        :return:
         """
         self.schedule.step()
         # Collect data at each step
