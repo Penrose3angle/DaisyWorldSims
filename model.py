@@ -22,6 +22,7 @@ class Gaia(mesa.Model):
                  initial_temp=25.0,
                  initial_black=100,
                  initial_white=100,
+                 max_age=5,
                  solar_luminosity=1.4,  # choices [0,8, 0.6, 1.0, 1.4]
                  white_albedo=0.75,
                  black_albedo=0.25,
@@ -42,6 +43,7 @@ class Gaia(mesa.Model):
         self.world_temperature = initial_temp
         self.initial_black = initial_black
         self.initial_white = initial_white
+        self.max_age = max_age
         self.solar_luminosity = solar_luminosity
         self.white_albedo = white_albedo
         self.black_albedo = black_albedo
@@ -52,7 +54,7 @@ class Gaia(mesa.Model):
 
         # Declare a Scheduler
         self.schedule = RandomActivationByTypeFiltered(self)
-        # Declare a World type (grid)
+        # Declare a World type
         self.grid = mesa.space.MultiGrid(self.width, self.height, torus=True)
         # Declare a Data Collector
         self.datacollector = mesa.DataCollector(
@@ -61,7 +63,6 @@ class Gaia(mesa.Model):
                 "White Daisies": lambda m: m.schedule.get_type_count(WhiteDaisy),
                 "Total Daisies": lambda m: m.schedule.get_type_count(BlackDaisy) + m.schedule.get_type_count(WhiteDaisy),
                 "World Temp": lambda m: m.schedule.get_mean_temp(),
-                # "Grass Temp": lambda m: m.schedule.get_type_count(GrassPatch, lambda x: x.temp),
             }
         )
 
@@ -88,8 +89,7 @@ class Gaia(mesa.Model):
             y = self.random.randrange(self.height)
             daisies = [a for a in self.grid.get_cell_list_contents((x, y)) if isinstance(a, GrassPatch) is False]
             if len(daisies) == 0:
-                remaining_lifespan = 5
-                daisy = agent_type(self.next_id(), (x, y), self, albedo, remaining_lifespan)
+                daisy = agent_type(self.next_id(), (x, y), self, albedo, self.max_age)
                 self.grid.place_agent(daisy, (x, y))
                 self.schedule.add(daisy)
 
@@ -109,7 +109,6 @@ class Gaia(mesa.Model):
                     self.schedule.time,
                     self.schedule.get_type_count(BlackDaisy),
                     self.schedule.get_type_count(WhiteDaisy),
-                    # self.schedule.get_type_count(GrassPatch, lambda x: x.fully_grown),
                 ]
             )
 

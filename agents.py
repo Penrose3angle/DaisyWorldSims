@@ -5,22 +5,17 @@ import random
 
 
 class Daisy(mesa.Agent):
-    def __init__(self, unique_id: int, pos, model, albedo: float, remaining_lifespan: int):
+    def __init__(self, unique_id: int, pos, model, albedo: float, max_age: int):
         super().__init__(unique_id, model)
         self.pos = pos
         self.albedo = albedo  # fraction (0.0 - 1.0) of energy absorbed as heat from sunlight
-        self.remaining_lifespan = remaining_lifespan  # remaining lifespan of the daisy (timestep)
+        self.max_age = max_age
+        self.remaining_lifespan = max_age  # remaining lifespan of the daisy (timestep)
 
     def step(self):
         self.change_local_temperature()
         self.spawn()
         self.check_lifespan()
-
-    def check_lifespan(self):
-        self.remaining_lifespan -= 1
-        if self.remaining_lifespan < 0:
-            self.model.grid.remove_agent(self)
-            self.model.schedule.remove(self)
 
     def change_local_temperature(self):
         """
@@ -65,19 +60,29 @@ class Daisy(mesa.Agent):
                 self.model.grid.place_agent(daisy, new_position)
                 self.model.schedule.add(daisy)
 
+    def check_lifespan(self):
+        """
+        Age the daisy and remove the agent if it dies in this period.
+        :return:
+        """
+        self.remaining_lifespan -= 1
+        if self.remaining_lifespan < 0:
+            self.model.grid.remove_agent(self)
+            self.model.schedule.remove(self)
+
     def _create_offspring(self, new_position):
         raise NotImplementedError
 
 
 class WhiteDaisy(Daisy):
     def _create_offspring(self, new_position):
-        daisy = WhiteDaisy(self.model.next_id(), new_position, self.model, self.albedo, 5)
+        daisy = WhiteDaisy(self.model.next_id(), new_position, self.model, self.albedo, self.max_age)
         return daisy
 
 
 class BlackDaisy(Daisy):
     def _create_offspring(self, new_position):
-        daisy = BlackDaisy(self.model.next_id(), new_position, self.model, self.albedo, 5)
+        daisy = BlackDaisy(self.model.next_id(), new_position, self.model, self.albedo, self.max_age)
         return daisy
 
 
