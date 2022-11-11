@@ -29,11 +29,7 @@ class Daisy(mesa.Agent):
         grid_content = self.model.grid.get_cell_list_contents(self.pos)
         grass = [a for a in grid_content if isinstance(a, GrassPatch)][0]
         absorbed_luminosity = (1 - self.albedo) * self.model.solar_luminosity
-        if absorbed_luminosity > 0:
-            local_heating = 72 * math.log(absorbed_luminosity) + 80
-        else:
-            local_heating = 80
-        grass.local_temperature = float((grass.local_temperature + local_heating) / 2)
+        grass.set_local_temperature(absorbed_luminosity)
 
     def spawn(self):
         """
@@ -48,10 +44,9 @@ class Daisy(mesa.Agent):
                 (0.1457 * self.model.world_temperature) - (0.0032 * (self.model.world_temperature ** 2)) - 0.6443)
         seed = random.random()
         if seed < seed_threshold:
-            neighbourhood = self.model.grid.get_neighborhood(
-                self.pos,
-                moore=True,
-                include_center=False)
+            neighbourhood = self.model.grid.get_neighborhood(self.pos,
+                                                             moore=True,
+                                                             include_center=False)
             new_position = self.random.choice(neighbourhood)
             grid_content = self.model.grid.get_cell_list_contents(new_position)
             daisies = [a for a in grid_content if isinstance(a, GrassPatch) is False]
@@ -100,5 +95,15 @@ class GrassPatch(mesa.Agent):
     def step(self):
         grid_content = self.model.grid.get_cell_list_contents(self.pos)
         daisies = [a for a in grid_content if isinstance(a, GrassPatch) is False]
+        # If there's no daisy there, set the local temp based on the grass' albedo.
+        # Otherwise, the Daisy-type agent will set the GrassPatch's temperature during their step.
         if len(daisies) == 0:
-            self.local_temperature = (1 - self.albedo) * self.model.solar_luminosity
+            absorbed_luminosity = (1 - self.albedo) * self.model.solar_luminosity
+            self.set_local_temperature(absorbed_luminosity)
+
+    def set_local_temperature(self, absorbed_luminosity):
+        if absorbed_luminosity > 0:
+            local_heating = 72 * math.log(absorbed_luminosity) + 80
+        else:
+            local_heating = 80
+        self.local_temperature = float((self.local_temperature + local_heating) / 2)
