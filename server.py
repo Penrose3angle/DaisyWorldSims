@@ -40,10 +40,10 @@ def daisy_portrayal(agent) -> Dict:
         portrayal["Local Temp"] = round(agent.local_temperature, 1)
         portrayal["Shape"] = "rect"
         portrayal["Filled"] = "true"
-        portrayal["Layer"] = 0
+        portrayal["Layer"] = 1
         portrayal["w"] = 1
         portrayal["h"] = 1
-        if agent.local_temperature >= 25:
+        if agent.local_temperature >= 22.5:
             portrayal["Color"] = '#8b0000'
         else:
             portrayal["Color"] = '#283618'
@@ -69,7 +69,6 @@ chart_element = mesa.visualization.ChartModule(
 chart_element_2 = mesa.visualization.ChartModule(
     [
         {"Label": "World Temp", "Color": "#AA0000"},
-        # {"Label": "Black Daisies", "Color": "#666666"},
     ],
     data_collector_name='datacollector'
 )
@@ -77,11 +76,12 @@ chart_element_2 = mesa.visualization.ChartModule(
 model_params = {
     # The following line is an example to showcase StaticText.
     "title": mesa.visualization.StaticText("Parameters:"),
-    ''
-    'initial_temp': mesa.visualization.Slider("Initial Temperature", 25, 1, 50),
+    'max_age': mesa.visualization.Slider("Max Age", 25, 1, 30),
+    'initial_temp': mesa.visualization.Slider("Initial Temperature", 0, 0, 50),
     'initial_white': mesa.visualization.Slider("Initial White Daisies", 50, 0, 100),
     'initial_black': mesa.visualization.Slider("Initial Black Daisies", 50, 0, 100),
-    'solar_luminosity': mesa.visualization.Slider("Solar Luminosity", 1.0, 0.6, 1.4, 0.1, description='How much energy a daisy can absorb'),
+    'solar_luminosity': mesa.visualization.Slider("Solar Luminosity", 1.0, 0.6, 1.4, 0.1,
+                                                  description='How much energy a daisy can absorb'),
 
     # "grass": mesa.visualization.Checkbox("Grass Enabled", True),
 }
