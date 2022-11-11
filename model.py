@@ -8,9 +8,8 @@ Replication of the model found in NetLogo:
 """
 
 import mesa
-
+from agents import GrassPatch, WhiteDaisy, BlackDaisy
 from scheduler import RandomActivationByTypeFiltered
-from agents import Daisy, GrassPatch, WhiteDaisy, BlackDaisy
 
 
 class Gaia(mesa.Model):
@@ -18,11 +17,11 @@ class Gaia(mesa.Model):
     Gaia Model
     """
     def __init__(self,
-                 initial_temp=25.0,
+                 initial_temp=0,
                  initial_black=100,
                  initial_white=100,
-                 max_age=5,
-                 solar_luminosity=1.4,  # choices [0,8, 0.6, 1.0, 1.4]
+                 max_age=25,
+                 solar_luminosity=0.8,  # choices [0,8, 0.6, 1.0, 1.4]
                  white_albedo=0.75,
                  black_albedo=0.25,
                  surface_albedo=0.4,
@@ -83,19 +82,23 @@ class Gaia(mesa.Model):
 
     def create_daisies(self, agent_type, initial_num, albedo):
         for i in range(initial_num):
-            x = self.random.randrange(self.width)
-            y = self.random.randrange(self.height)
-            daisies = [a for a in self.grid.get_cell_list_contents((x, y)) if isinstance(a, GrassPatch) is False]
-            if len(daisies) == 0:
-                daisy = agent_type(self.next_id(), (x, y), self, albedo, self.max_age)
-                self.grid.place_agent(daisy, (x, y))
-                self.schedule.add(daisy)
+            daisies = [1]
+            while len(daisies) != 0:
+                x = self.random.randrange(self.width)
+                y = self.random.randrange(self.height)
+                daisies = [a for a in self.grid.get_cell_list_contents((x, y)) if isinstance(a, GrassPatch) is False]
+                if len(daisies) == 0:
+                    daisy = agent_type(self.next_id(), (x, y), self, albedo, self.max_age)
+                    self.grid.place_agent(daisy, (x, y))
+                    self.schedule.add(daisy)
 
     def step(self):
         """
         Walk the schedule one step and collect the data from the model
         """
-        self.schedule.step()
+        self.schedule.step_type(GrassPatch)
+        self.schedule.step_type(WhiteDaisy)
+        self.schedule.step_type(BlackDaisy)
         # Collect data at each step
         self.datacollector.collect(self)
         # Update the world temperature
@@ -106,6 +109,7 @@ class Gaia(mesa.Model):
                     self.schedule.time,
                     self.schedule.get_type_count(BlackDaisy),
                     self.schedule.get_type_count(WhiteDaisy),
+                    self.schedule.get_mean_temp(),
                 ]
             )
 
@@ -130,8 +134,8 @@ class Gaia(mesa.Model):
             print("World Burn", self.schedule.get_mean_temp())
 
 
-import random
-random.seed = 32
-empty_model = Gaia()
-empty_model.verbose = True
-empty_model.run_model(10)
+# import random
+# random.seed = 32
+# empty_model = Gaia()
+# empty_model.verbose = True
+# empty_model.run_model(20)
